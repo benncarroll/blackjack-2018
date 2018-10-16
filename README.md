@@ -6,10 +6,11 @@ Blackjack made for a 12SDD assignment. Written in [Vue.js](https://vuejs.org/) a
 ## Using this repo
 
 - Download packages and prepares repo:
-  - `yarn install`
+    - `yarn install`
 - Compiles and hot-reloads for development
-  - `yarn run serve`
+    - `yarn run serve`
 - Compiles and minifies for production
-  - `yarn run build`
+    - `yarn run build`
 - Lints and fixes files
-  - `yarn run lint`
+    - `yarn run lint`
+  

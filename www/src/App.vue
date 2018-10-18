@@ -16,6 +16,8 @@
     <button v-on:click="createHands">Create {{ player_count }} Players</button>
     <br>
     <button v-on:click="assignPlayer">Assign Player</button>
+    <br>
+    <button v-on:click="clearAll">Clear</button>
   </div>
   <div class="hand-bar">
     <Hand v-for="hand in players" v-bind:key="hand.id" v-bind:hObject="hand" v-on:action="handEvent" />
@@ -45,7 +47,7 @@ export default {
   },
   data() {
     return {
-      dealer: new HandClass(0, 'black', false, [new CardClass(10, 's', 0)]),
+      dealer: new HandClass(0, 'black', false, []),
 
       player_count: 5,
 
@@ -70,12 +72,7 @@ export default {
       // make player objects
       var deg = 0;
       for (var i = 0; i < this.player_count; i++) {
-        var pObject = {
-          cards: [],
-          id: this.player_id_counter++,
-          colour: "hsla(" + deg + ", 50%, 45%, 1)",
-          isPlayer: false
-        };
+        var pObject = new HandClass(this.player_id_counter++, "hsla(" + deg + ", 50%, 45%, 1)", false, []);
 
         // cycle colour
         deg += 360 / this.player_count;
@@ -86,19 +83,21 @@ export default {
     dealAll() {
       // eslint-disable-next-line
       // console.log('Dealing to all players...');
-      var x = 0;
+      var x = -1;
       var b = this;
       var iTime = 100
       var intervalID = setInterval(function() {
-
-        b.dealCard(b.players[x])
-
-        if (++x === b.players.length) {
+        x++;
+        if (x == b.players.length || x >= b.players.length) {
           window.clearInterval(intervalID);
+        } else {
+          if (b.players[x].canAcceptCard()) {
+            b.players[x].addCard(b.popCard())
+          }
         }
+
       }, iTime);
       setTimeout(function() {
-        console.log(b.popCard());
         if (b.dealer.canAcceptCard()) {
           b.dealer.addCard(b.popCard())
         }
@@ -155,6 +154,10 @@ export default {
     handEvent(arg) {
       // eslint-disable-next-line
       console.log(arg);
+    },
+    clearAll() {
+      this.players = []
+      this.dealer.clearHand()
     }
 
   }

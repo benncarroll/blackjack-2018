@@ -113,5 +113,11 @@ export class HandClass {
       return card
     }
   }
+  removeCard(position) {
+    this.cards.splice(position, 1)
+  }
+  clearHand() {
+    this.cards = []
+  }
 
 }

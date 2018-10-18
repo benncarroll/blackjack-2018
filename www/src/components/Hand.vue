@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="main">
-  <div class="value" v-on:click="removeCard(0)"> {{ hand_value() }} </div>
+  <div class="value" v-on:click="hObject.removeCard(0)"> {{ hObject.value() }} </div>
 
 <div class="hand" v-bind:style="{backgroundColor: hObject.colour}">
 
@@ -10,7 +10,7 @@
 
 
 
-        <Card v-for="card in hObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="stat_gen()"/>
+        <Card v-for="card in hObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="hObject.quick_status()"/>
 
         <!-- <div class="add-wrapper" v-bind:class="{hidden: blockAdd()}">
           <input maxlength="3" size="3" v-on:keyup="keymonitor" v-model="inputContent" type="text">
@@ -49,108 +49,8 @@ export default {
   props: ['hObject'], //'colour', 'cards', 'player'],
   components: {
     Card
-  },
-  data() {
-    return {
-      value: 0,
-      inputContent: ""
-    }
-  },
-  methods: {
-    removeCard(id) {
-      this.hObject.cards.splice(id, 1)
-    },
-    addCard() {
-
-      if (this.blockAdd()) {
-        return
-      }
-
-      var letterReg = /[scdh]+/gi // regex to match suits (s, c, d, h)
-      var numberReg = /((((1)(0))|[2-9])|[akqj]){1}/gi // regex to match value (2-10, A, K, Q, J)
-
-      var face = this.inputContent.match(numberReg)
-      var suit = this.inputContent.match(letterReg)
-
-      // If either one of the regex's don't match, return
-      if (!face || !suit) {
-        return;
-      }
-
-      this.cards.push({
-        face_value: face[0],
-        suit: suit[0].toLowerCase(),
-        id: this.getRandomInt(100, 10000000)
-      })
-
-      this.inputContent = "";
-    },
-    keymonitor: function(event) {
-      if (event.key == "Enter") {
-        this.addCard()
-      }
-    },
-    hand_value() {
-      var total = 0;
-
-      // Value dictionary for face non-numeric face values
-      var vd = {
-        "K": 10,
-        "Q": 10,
-        "J": 10,
-        "A": 11
-      }
-
-      var ace_count = 0;
-
-      // Loop through all card objects
-      var cards = this.hObject.cards;
-      for (var i = 0; i < cards.length; i++) {
-        var fv_letter = cards[i].face_value.toString().toUpperCase();
-        if (fv_letter in vd) {
-          total += vd[fv_letter];
-          if (fv_letter == "A") {
-            ace_count += 1;
-          }
-        } else {
-          total += Number(cards[i].face_value);
-        }
-      }
-      while (total > 21 && ace_count > 0) {
-        total -= 10;
-        ace_count -= 1;
-      }
-      return total
-    },
-    getRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-    },
-    blackjack() {
-      if (this.hand_value() == 21) {
-        return true
-      } else {
-        return false
-      }
-    },
-    bust() {
-      if (this.hand_value() > 21) {
-        return true
-      } else {
-        return false
-      }
-    },
-    stat_gen() {
-      if (this.bust()) {
-        return 2
-      } else if (this.blackjack()) {
-        return 1
-      } else {
-        return 0
-      }
-    }
   }
+
 }
 </script>
 

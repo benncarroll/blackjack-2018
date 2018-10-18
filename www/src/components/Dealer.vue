@@ -2,15 +2,9 @@
 <div class="dealer">
       <div class="card-row">
 
-        <span class="value" v-on:click="removeCard(0)"> {{ dObject.value() }} </span>
+        <span class="value" v-on:click="dObject.removeCard(0)"> {{ dObject.value() }} </span>
 
         <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="dObject.quick_status()"/>
-
-        <!-- <div class="add-wrapper" v-bind:class="{hidden: blockAdd()}">
-          <input maxlength="3" size="3" v-on:keyup="keymonitor" v-model="inputContent" type="text">
-          &nbsp;
-          <i class="fa fa-plus-circle" v-on:click="addCard()"></i>
-        </div> -->
 
         <div class="button deal" @click="$emit('deal')">
           <span>DEAL</span>
@@ -32,22 +26,6 @@ export default {
   props: ['dObject'],
   components: {
     Card
-  },
-  data() {
-    return {
-      value: 0,
-      inputContent: ""
-    }
-  },
-  methods: {
-    removeCard(id) {
-      this.dObject.cards.splice(id, 1)
-    },
-    getRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-    }
   }
 }
 </script>
@@ -65,6 +43,9 @@ export default {
   border: 2px solid transparent;
   border-color: transparent;
   border-radius: 0px 0px 10px 10px;
+}
+.deal {
+  margin-left: 10px;
 }
 
 i.fa {

@@ -204,19 +204,4 @@ input {
   color: white;
 }
 
-.button {
-  margin: 5px 0px 5px 0px;
-  padding: 5px;
-  font-size: 20px;
-  font-weight: bold;
-  height: 1.5em;
-  text-align: center;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  cursor: pointer;
-}
-
 </style>

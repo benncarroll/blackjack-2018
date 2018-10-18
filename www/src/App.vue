@@ -45,14 +45,7 @@ export default {
   },
   data() {
     return {
-      dealer: {
-        id: 0,
-        cards: [{
-          face_value: '10',
-          suit: 'c',
-          id: 37
-        }]
-      },
+      dealer: new HandClass(0, 'black', false, [new CardClass(10, 's', 0)]),
 
       player_count: 5,
 
@@ -105,7 +98,10 @@ export default {
         }
       }, iTime);
       setTimeout(function() {
-        b.dealCard(b.dealer)
+        console.log(b.popCard());
+        if (b.dealer.canAcceptCard()) {
+          b.dealer.addCard(b.popCard())
+        }
       }, iTime * (b.players.length + 1));
 
     },
@@ -115,8 +111,11 @@ export default {
         // eslint-disable-next-line
         console.error('Deck out of cards.');
       }
-      pObject.cards.push(d.pop(Math.floor(Math.random() * d.length)))
+      pObject.cards.push(this.popCard())
 
+    },
+    popCard() {
+      return this.deck.pop(Math.floor(Math.random() * this.deck.length))
     },
     chooseRandomItem(myArray) {
       return myArray[Math.floor(Math.random() * myArray.length)];

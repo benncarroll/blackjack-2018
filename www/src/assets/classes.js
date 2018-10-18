@@ -1,6 +1,6 @@
-class CardClass {
+export class CardClass {
   constructor(fv, s, id) {
-    this.face_value = fv
+    this.face_value = fv.toString()
     this.suit = s
     this.id = id
     this._sd = {
@@ -17,7 +17,7 @@ class CardClass {
     }
   }
   get value() {
-    if (this.face_value.isNan()) {
+    if (this.face_value.isNaN()) {
       return Number(this._fd[this.face_value])
     } else {
       return Number(this.face_value)
@@ -31,8 +31,8 @@ class CardClass {
   }
 }
 
-class HandClass {
-  constructor(colour, isPlayer, id, cards) {
+export class HandClass {
+  constructor(id, colour, isPlayer, cards) {
     this.cards = cards || [];
     this.isPlayer = isPlayer || false;
     this.colour = colour;
@@ -71,14 +71,14 @@ class HandClass {
     return total
   }
   blackjack() {
-    if (this.hand_value() == 21) {
+    if (this.value() == 21) {
       return true
     } else {
       return false
     }
   }
   bust() {
-    if (this.hand_value() > 21) {
+    if (this.value() > 21) {
       return true
     } else {
       return false
@@ -95,14 +95,18 @@ class HandClass {
   }
   canAcceptCard() {
     if (this.blackjack() || this.bust()) {
-      return true;
-    } else {
       return false;
+    } else {
+      return true;
     }
   }
   addCard(card) {
     if (this.canAcceptCard()) {
-      this.cards.push(card)
+      if (card instanceof CardClass) {
+        this.cards.push(card)
+      } else {
+        this.cards.push(new CardClass(card.face_value, card.suit, card.id))
+      }
     } else {
       // eslint-disable-next-line
       console.error('Hand - Card added to hand without checking addCard() !');

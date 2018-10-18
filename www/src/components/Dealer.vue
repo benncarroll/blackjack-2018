@@ -2,9 +2,9 @@
 <div class="dealer">
       <div class="card-row">
 
-        <span class="value" v-on:click="removeCard(0)"> {{ hand_value() }} </span>
+        <span class="value" v-on:click="removeCard(0)"> {{ dObject.value() }} </span>
 
-        <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="stat_gen()"/>
+        <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="dObject.quick_status()"/>
 
         <!-- <div class="add-wrapper" v-bind:class="{hidden: blockAdd()}">
           <input maxlength="3" size="3" v-on:keyup="keymonitor" v-model="inputContent" type="text">
@@ -42,97 +42,6 @@ export default {
   methods: {
     removeCard(id) {
       this.dObject.cards.splice(id, 1)
-    },
-    addCard() {
-
-      if (this.blockAdd()) {
-        return
-      }
-
-      var letterReg = /[scdh]+/gi // regex to match suits (s, c, d, h)
-      var numberReg = /((((1)(0))|[2-9])|[akqj]){1}/gi // regex to match value (2-10, A, K, Q, J)
-
-      var face = this.inputContent.match(numberReg)
-      var suit = this.inputContent.match(letterReg)
-
-      // If either one of the regex's don't match, return
-      if (!face || !suit) {
-        return;
-      }
-
-      this.dObject.cards.push({
-        face_value: face[0],
-        suit: suit[0].toLowerCase(),
-        id: this.getRandomInt(100, 10000000)
-      })
-
-      this.inputContent = "";
-    },
-    keymonitor: function(event) {
-      if (event.key == "Enter") {
-        this.addCard()
-      }
-    },
-    hand_value() {
-      var total = 0;
-
-      // Value dictionary for face non-numeric face values
-      var vd = {
-        "K": 10,
-        "Q": 10,
-        "J": 10,
-        "A": 11
-      }
-
-      var ace_count = 0;
-
-      // Loop through all card objects
-      for (var i = 0; i < this.dObject.cards.length; i++) {
-        var fv_letter = this.dObject.cards[i].face_value.toUpperCase();
-        if (fv_letter in vd) {
-          total += vd[fv_letter];
-          if (fv_letter == "A") {
-            ace_count += 1;
-          }
-        } else {
-          total += Number(this.dObject.cards[i].face_value);
-        }
-      }
-      while (total > 21 && ace_count > 0) {
-        total -= 10;
-        ace_count -= 1;
-      }
-      return total
-    },
-    blackjack() {
-      if (this.hand_value() == 21) {
-        return true
-      } else {
-        return false
-      }
-    },
-    bust() {
-      if (this.hand_value() > 21) {
-        return true
-      } else {
-        return false
-      }
-    },
-    stat_gen() {
-      if (this.bust()) {
-        return 2
-      } else if (this.blackjack()) {
-        return 1
-      } else {
-        return 0
-      }
-    },
-    blockAdd() {
-      if (this.blackjack() || this.bust()) {
-        return true;
-      } else {
-        return false;
-      }
     },
     getRandomInt(min, max) {
       min = Math.ceil(min);

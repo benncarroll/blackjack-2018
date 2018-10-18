@@ -126,6 +126,29 @@ export default {
       min = Math.ceil(min);
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+    },
+    blackjack() {
+      if (this.hand_value() == 21) {
+        return true
+      } else {
+        return false
+      }
+    },
+    bust() {
+      if (this.hand_value() > 21) {
+        return true
+      } else {
+        return false
+      }
+    },
+    stat_gen() {
+      if (this.bust()) {
+        return 2
+      } else if (this.blackjack()) {
+        return 1
+      } else {
+        return 0
+      }
     }
   }
 }

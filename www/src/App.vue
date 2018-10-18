@@ -27,6 +27,10 @@
 import Card from './components/Card.vue'
 import Hand from './components/Hand.vue'
 import Dealer from './components/Dealer.vue'
+import {
+  CardClass,
+  HandClass
+} from './assets/classes.js'
 
 export default {
   name: 'app',

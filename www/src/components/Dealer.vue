@@ -180,6 +180,7 @@ i.fa {
 .card-row .card {
   margin: 0px 10px 0px 10px;
 }
+
 @media only screen and (min-width: 500px) {
   /* .card-row .card {
     margin: 0px;
@@ -203,5 +204,4 @@ input {
 .value {
   color: white;
 }
-
 </style>

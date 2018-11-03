@@ -2,7 +2,7 @@
 <div class="dealer">
       <div class="card-row">
 
-        <span class="value" v-on:click="dObject.removeCard(0)"> {{ dObject.value() }} </span>
+        <span class="value" v-on:click="dObject.removeCard(0)" v-bind:class="{clear: dObject.value_obscured()}"> {{ dObject.value() }} </span>
 
         <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="dObject.quick_status()"/>
 
@@ -96,5 +96,8 @@ input {
 
 .value {
   color: white;
+}
+.clear {
+  opacity: 0;
 }
 </style>

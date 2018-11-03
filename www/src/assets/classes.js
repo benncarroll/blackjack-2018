@@ -3,6 +3,7 @@ export class CardClass {
     this.face_value = fv.toString()
     this.suit = s
     this.id = id
+    this.flipped = false
     this._sd = {
       s: ['♠', 'black'],
       h: ['♥', 'red'],
@@ -28,6 +29,12 @@ export class CardClass {
   }
   get icon() {
     return this._sd[this.suit][0]
+  }
+  down() {
+    this.flipped = true;
+  }
+  up() {
+    this.flipped = false;
   }
 }
 
@@ -69,6 +76,20 @@ export class HandClass {
       ace_count -= 1;
     }
     return total
+  }
+  value_obscured() {
+    var has_flipped = false;
+    for (var i = 0; i < this.cards.length; i++) {
+      if (this.cards[i]) {
+        has_flipped = true;
+        break
+      }
+    }
+    if (has_flipped) {
+      return true;
+    } else {
+      return false;
+    }
   }
   blackjack() {
     if (this.value() == 21) {

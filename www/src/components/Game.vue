@@ -110,6 +110,10 @@ export default {
         setTimeout(function() {
           if (b.dealer.canAcceptCard()) {
             var card = b.popCard()
+            if (dealer == 2) {
+              console.log(card);
+              card.down()
+            }
             b.dealer.addCard(card)
           }
         }, iTime * (playersAccepting.length + 1));
@@ -186,6 +190,7 @@ export default {
     runGame(a) {
       if (a == "setup") {
         this.dealAll();
+        this.selectiveDeal(this.playersAccepting(), 2)
       }
     }
   }

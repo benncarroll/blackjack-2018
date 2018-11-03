@@ -7,7 +7,7 @@
     </div>
   </div>
   <div class="dealer-bar">
-    <Dealer v-bind:dObject="dealer" v-on:deal="dealAll" />
+    <Dealer v-bind:dObject="dealer" v-on:deal="dealAll" v-on:superDeal="superDeal" />
 
     <input type="number" name="inumber" min=1 max=8 v-model="deck_count">
     <button type="button" name="button" v-on:click="makeDeck">Make {{ deck_count }} decks.</button>
@@ -85,14 +85,20 @@ export default {
       // console.log('Dealing to all players...');
       var x = -1;
       var b = this;
-      var iTime = 100
+      var iTime = 100;
+      var acceptArr = [];
+      for (var i = 0; i < b.players.length; i++) {
+        if (b.players[i].canAcceptCard) {
+          acceptArr.push(i)
+        }
+      }
       var intervalID = setInterval(function() {
         x++;
-        if (x == b.players.length || x >= b.players.length) {
+        if (x >= acceptArr.length) {
           window.clearInterval(intervalID);
         } else {
-          if (b.players[x].canAcceptCard()) {
-            b.players[x].addCard(b.popCard())
+          if (b.players[acceptArr[x]].canAcceptCard()) {
+            b.players[acceptArr[x]].addCard(b.popCard())
           }
         }
 
@@ -101,8 +107,17 @@ export default {
         if (b.dealer.canAcceptCard()) {
           b.dealer.addCard(b.popCard())
         }
-      }, iTime * (b.players.length + 1));
+      }, iTime * (acceptArr.length + 1));
 
+    },
+    superDeal() {
+      var i = 0;
+      var b = this;
+      for (var i = 0; i < 6; i++) {
+        setTimeout(function() {
+          b.dealAll()
+        }, i * 500)
+      }
     },
     dealCard(pObject) {
       var d = this.deck;

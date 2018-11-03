@@ -9,6 +9,9 @@
         <div class="button deal" @click="$emit('deal')">
           <span>DEAL</span>
         </div>
+        <div class="button deal" @click="$emit('superDeal')">
+          <span>SUPER DEAL</span>
+        </div>
 
       </div>
       <!-- {{ hand_value() }}

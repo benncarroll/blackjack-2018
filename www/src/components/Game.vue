@@ -12,6 +12,8 @@
     <button v-on:click="assignPlayer">Assign Player</button>
     <br>
     <button v-on:click="clearAll">Clear</button>
+    <br><br>
+    <button v-on:click="runGame('setup')">Setup</button>
   </div>
   <div class="hand-bar">
     <Hand v-for="hand in players" v-bind:key="hand.id" v-bind:hObject="hand" v-on:action="handEvent" />
@@ -24,6 +26,7 @@ import Card from './Card.vue'
 import Hand from './Hand.vue'
 import Dealer from './Dealer.vue'
 import {
+  CardClass,
   HandClass
 } from '../assets/classes.js'
 
@@ -74,33 +77,43 @@ export default {
       }
     },
     dealAll() {
-      // eslint-disable-next-line
-      // console.log('Dealing to all players...');
+      this.selectiveDeal(this.playersAccepting())
+    },
+    playersAccepting() {
+      var playersAccepting = [];
+      for (var i = 0; i < this.players.length; i++) {
+        if (this.players[i].canAcceptCard()) {
+          playersAccepting.push(i)
+        }
+      }
+      return playersAccepting;
+    },
+    selectiveDeal(playersAccepting, dealer) {
       var x = -1;
       var b = this;
       var iTime = 100;
-      var acceptArr = [];
-      for (var i = 0; i < b.players.length; i++) {
-        if (b.players[i].canAcceptCard()) {
-          acceptArr.push(i)
-        }
-      }
+      // var playersAccepting = [];
       var intervalID = setInterval(function() {
         x++;
-        if (x >= acceptArr.length) {
+        if (x >= playersAccepting.length) {
           window.clearInterval(intervalID);
         } else {
-          if (b.players[acceptArr[x]].canAcceptCard()) {
-            b.players[acceptArr[x]].addCard(b.popCard())
+          if (b.players[playersAccepting[x]].canAcceptCard()) {
+            b.players[playersAccepting[x]].addCard(b.popCard())
           }
         }
 
       }, iTime);
-      setTimeout(function() {
-        if (b.dealer.canAcceptCard()) {
-          b.dealer.addCard(b.popCard())
-        }
-      }, iTime * (acceptArr.length + 1));
+      // dealer values
+      // 0 = none, 1 = normal, 2 = flipped
+      if (dealer != 0) {
+        setTimeout(function() {
+          if (b.dealer.canAcceptCard()) {
+            var card = b.popCard()
+            b.dealer.addCard(card)
+          }
+        }, iTime * (playersAccepting.length + 1));
+      }
 
     },
     superDeal() {
@@ -134,11 +147,11 @@ export default {
       for (var i = 0; i < this.deck_count; i++) { // For every deck
         for (var s = 0; s < this.su_array.length; s++) { // For every suit
           for (var f = 0; f < this.fv_array.length; f++) { // For every value
-            this.deck.push({
-              face_value: this.fv_array[f],
-              suit: this.su_array[s],
-              id: this.card_id_counter++
-            })
+            this.deck.push(new CardClass(
+              this.fv_array[f],
+              this.su_array[s],
+              this.card_id_counter++
+            ))
           }
         }
       }
@@ -169,14 +182,17 @@ export default {
     clearAll() {
       this.players = []
       this.dealer.clearHand()
+    },
+    runGame(a) {
+      if (a == "setup") {
+        this.dealAll();
+      }
     }
-
   }
 }
 </script>
 
 <style>
-
 .hand-bar {
   position: fixed;
   display: flex;

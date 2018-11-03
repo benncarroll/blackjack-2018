@@ -2,8 +2,8 @@
 
 import Vue from 'vue';
 import Router from 'vue-router';
-import Todos from './components/Todos.vue';
-import About from './components/About.vue';
+import Game from './components/Game.vue';
+import Welcome from './components/Welcome.vue';
 
 Vue.use(Router);
 
@@ -11,13 +11,13 @@ export default new Router({
   routes: [
     {
       path:'/',
-      name: 'todos',
-      component: Todos
+      name: 'welcome',
+      component: Welcome
     },
     {
-      path:'/about/:name',
-      name:'about',
-      component: About
+      path:'/play',
+      name:'game',
+      component: Game
     }
   ]
 });

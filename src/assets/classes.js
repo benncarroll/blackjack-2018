@@ -39,11 +39,29 @@ export class CardClass {
 }
 
 export class HandClass {
-  constructor(id, colour, isPlayer, cards) {
+  constructor(id, colour, isPlayer, cards, isDealer, threshold, isAi) {
     this.cards = cards || [];
     this.isPlayer = isPlayer || false;
+    this.isDealer = isDealer || false;
+    this.isAi = isAi || false;
+    this.threshold = threshold;
+
     this.colour = colour;
     this.id = id;
+    this.hasStood = false;
+    this.isTurn = false;
+
+    this.hasWon = false;
+    this.hasTied = false;
+    this.hasLost = false;
+
+    this.showButtons = false;
+    this.killButtons = true;
+    this.showStood = false;
+  }
+  reset() {
+    this.cards = [];
+    this.hasStood = false;
   }
   value() {
     var total = 0;
@@ -77,10 +95,19 @@ export class HandClass {
     }
     return total
   }
+  value_display() {
+    return !this.value_obscured() ? this.value() : "~~"
+  }
+  value_compare() {
+    if (this.bust()) {
+      return 0
+    }
+    return this.value()
+  }
   value_obscured() {
     var has_flipped = false;
     for (var i = 0; i < this.cards.length; i++) {
-      if (this.cards[i]) {
+      if (this.cards[i].flipped) {
         has_flipped = true;
         break
       }
@@ -106,16 +133,20 @@ export class HandClass {
     }
   }
   quick_status() {
-    if (this.bust()) {
+    if (this.value_obscured() || this.hasTied) {
+      return 0
+    } else if (this.bust() || this.hasLost) {
       return 2
-    } else if (this.blackjack()) {
+    } else if (this.blackjack() || this.hasWon) {
       return 1
+    } else if (this.showStood) {
+      return 3
     } else {
       return 0
     }
   }
   canAcceptCard() {
-    if (this.blackjack() || this.bust()) {
+    if (this.blackjack() || this.bust() || this.hasStood) {
       return false;
     } else {
       return true;
@@ -140,5 +171,59 @@ export class HandClass {
   clearHand() {
     this.cards = []
   }
-
+  stand() {
+    this.hasStood = true;
+    this.showStood = true;
+  }
+  notPlayer() {
+    var oldPlayer = this;
+    if (this.isPlayer) {
+      oldPlayer.isPlayer = false;
+      oldPlayer.showButtons = false;
+      setTimeout(function() {
+        oldPlayer.killButtons = true
+      }, 0)
+    }
+  }
+  setPlayer() {
+    var newPlayer = this;
+    newPlayer.isPlayer = true;
+    newPlayer.killButtons = false;
+    setTimeout(function() {
+      newPlayer.showButtons = true;
+    }, 800)
+  }
+  buttonsDisabled() {
+    return !this.canAcceptCard() || !this.isTurn;
+  }
+  getMove() {
+    if (this.isAi) {
+      if (this.hasStood) {
+        return false;
+      }
+      if (this.value() >= this.threshold) {
+        this.hasStood = true;
+        return false
+      } else {
+        return true
+      }
+    } else {
+      // eslint-disable-next-line
+      console.error("getMove() called on player object.")
+    }
+  }
+  dealerWillAccept() {
+    if (this.isDealer) {
+      if (this.value() >= this.threshold) {
+        return false
+      } else {
+        return true
+      }
+    }
+  }
+  showAllCards() {
+    for (var i = 0; i < this.cards.length; i++) {
+      this.cards[i].up()
+    }
+  }
 }

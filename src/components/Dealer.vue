@@ -1,22 +1,15 @@
 <template lang="html">
 <div class="dealer">
-      <div class="card-row">
+  <div class="card-row">
 
-        <span class="value" v-on:click="dObject.removeCard(0)" v-bind:class="{clear: dObject.value_obscured()}"> {{ dObject.value() }} </span>
+    <!-- v-bind:class="{clear: dObject.value_obscured()}" -->
+    <span class="value"> {{ dObject.value_display() }} </span>
 
-        <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="dObject.quick_status()"/>
+    <Card v-for="card in dObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="dObject.quick_status()" />
 
-        <div class="button deal" @click="$emit('deal')">
-          <span>DEAL</span>
-        </div>
-        <div class="button deal" @click="$emit('superDeal')">
-          <span>SUPER DEAL</span>
-        </div>
+  </div>
 
-      </div>
-      <!-- {{ hand_value() }}
-      {{ blackjack() }}
-      {{ border() }} -->
+  <div class="text"> dealer draws to {{ dObject.threshold - 1 }}, stands on {{ dObject.threshold }}</div>
 
 </div>
 </template>
@@ -47,8 +40,16 @@ export default {
   border-color: transparent;
   border-radius: 0px 0px 10px 10px;
 }
+
 .deal {
   margin-left: 10px;
+}
+
+.text {
+  margin-top: 10px;
+  color: #ffffff;
+  font-style: italic;
+  font-size: 0.75em;
 }
 
 i.fa {
@@ -68,6 +69,7 @@ i.fa {
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: center;
+  height: calc(1.5em + 16px);
 }
 
 .card-row .card {
@@ -97,6 +99,7 @@ input {
 .value {
   color: white;
 }
+
 .clear {
   opacity: 0;
 }

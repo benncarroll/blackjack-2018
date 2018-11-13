@@ -1,6 +1,6 @@
 <template lang="html">
 <div class="card noselect" v-on:click="cObject.flipped = !cObject.flipped">
-  <div class="wrapper" v-bind:style="{color: this.getSuitData('colour', cObject.suit)}" v-bind:class="{blackjack: hand_stat == 1,  bust: hand_stat == 2, overturned: cObject.flipped}" >
+  <div class="wrapper" v-bind:style="{color: this.getSuitData('colour', cObject.suit)}" v-bind:class="{blackjack: hand_stat == 1,  bust: hand_stat == 2, stood: hand_stat == 3, overturned: cObject.flipped}" >
     <span class="value">{{ cObject.face_value.toUpperCase() }} </span>
 
     <span class="icon">{{ getSuitData('icon', this.cObject.suit) }}</span>
@@ -68,18 +68,19 @@ export default {
   background: rgb(128, 0, 0);
 }
 
+.stood {
+  background: rgb(117, 117, 117);
+}
+
 .overturned {
   color: transparent !important;
 
   background: #36c;
-  background:
-  linear-gradient(115deg, transparent 75%, rgba(255,255,255,.8) 75%) 0 0,
-  linear-gradient(245deg, transparent 75%, rgba(255,255,255,.8) 75%) 0 0,
-  linear-gradient(115deg, transparent 75%, rgba(255,255,255,.8) 75%) 7px -15px,
-  linear-gradient(245deg, transparent 75%, rgba(255,255,255,.8) 75%) 7px -15px,
+  background: linear-gradient(115deg, transparent 75%, rgba(255, 255, 255, .8) 75%) 0 0,
+  linear-gradient(245deg, transparent 75%, rgba(255, 255, 255, .8) 75%) 0 0,
+  linear-gradient(115deg, transparent 75%, rgba(255, 255, 255, .8) 75%) 7px -15px,
+  linear-gradient(245deg, transparent 75%, rgba(255, 255, 255, .8) 75%) 7px -15px,
   #36c;
   background-size: 15px 30px;
-
-
-  }
-  </style>
+}
+</style>

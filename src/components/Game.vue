@@ -1,13 +1,13 @@
 <template>
 <div class='main noselect'>
   <div class="dealer-bar">
-    <Dealer v-bind:dObject="dealer" v-on:deal="dealAll" v-on:superDeal="superDeal" />
+    <Dealer v-bind:dObject="dealer" />
 
     <button id="setup" class="hide" v-on:click="runGame('setup')">Setup</button>
 
   </div>
   <div class="hand-bar">
-    <Hand v-for="hand in players" v-bind:key="hand.id" v-bind:hObject="hand" v-on:action="handEvent" v-on:setPlayer="setPlayer(hand.id)" />
+    <Hand v-for="(hand, index) in players" v-bind:key="hand.id" v-bind:hObject="hand" v-on:action="handEvent" v-on:setPlayer="setPlayer(hand.id)" v-bind:ref="'playerComponent'+index.toString()" />
   </div>
 </div>
 </template>
@@ -91,8 +91,12 @@ export default {
         this.players.push(pObject)
       }
     },
-    dealAll() {
-      this.selectiveDeal(this.playersAccepting())
+    initialDeal() {
+      var b = this;
+      b.selectiveDeal(b.playersAccepting())
+      b.createTimer(0, function() {
+        b.selectiveDeal(b.playersAccepting())
+      }, 200 * this.players.length);
     },
     giveCard(player) {
       if (player.canAcceptCard()) {
@@ -150,37 +154,34 @@ export default {
       }
       // cycleRange = this.cullRange(cycleRange);
 
-      var intervalID = setInterval(function() {
+      var dealIntervalID = b.createTimer(1, function() {
           x++;
           if (x > cycleRange[cycleRange.length - 1]) {
-            window.clearInterval(intervalID);
+            window.clearInterval(dealIntervalID);
             callback();
           } else {
             var player = b.players[x]
             if (turnHighlighting) {
               player.isTurn = true;
-              var timeoutID1 = setTimeout(function() {
+              b.createTimer(0, function() {
                 b.giveCard(player);
                 if (player.hasStood) {
                   player.showStood = true;
                 }
-                var timeoutID2 = setTimeout(function() {
+                b.createTimer(0, function() {
                   player.isTurn = false;
                 }, iTime / 2)
-                b.timerList.push(timeoutID2);
               }, iTime / 2)
-              b.timerList.push(timeoutID1);
             } else {
               b.giveCard(player)
             }
           }
         },
         iTime);
-      b.timerList.push(intervalID);
       // dealer values
       // 0 = none, 1 = normal, 2 = flipped
       if (dealer != 0) {
-        var timeoutID = setTimeout(function() {
+        b.createTimer(0, function() {
           if (b.dealer.canAcceptCard()) {
             var card = b.popCard()
             if (dealer == 2) {
@@ -189,18 +190,8 @@ export default {
             b.dealer.addCard(card)
           }
         }, iTime * (cycleRange.length + 1));
-        b.timerList.push(timeoutID);
       }
 
-    },
-    superDeal() {
-      var b = this;
-      for (var i = 0; i < 6; i++) {
-        var timeoutID = setTimeout(function() {
-          b.dealAll()
-        }, i * 1000)
-        b.timerList.push(timeoutID);
-      }
     },
     dealCard(pObject) {
       var d = this.deck;
@@ -255,154 +246,162 @@ export default {
     handEvent(arg) {
       var action = arg[1];
       if (action == "hit") {
-        this.selectiveDeal([arg[0]], 0);
+        this.dealCard(this.players[arg[0]], 0);
       } else if (action == "stand") {
         this.players[arg[0]].stand()
       }
-      this.runGame('roundSecondHalf');
+      this.playerHook(this.players[arg[0]])
     },
-    stopGame() {
-      this.runGame()
+    sendEmit(player_id, text) {
+      var obj = this.$refs["playerComponent" + player_id.toString()][0]
+      obj.emitAction(text);
     },
-    runGame(a) {
+    createTimer(type, f, time) {
+      // type = 0 for timeout, 1 for interval
+      var id;
+      if (type == 1) {
+        id = setInterval(f, time)
+      } else if (type == 0) {
+        id = setTimeout(f, time)
+      }
+      this.timerList.push(id)
+      return id
+    },
+    runGame(a, c) {
       var b = this;
       if (a == 'setup') {
 
         window.globalGameHook = b;
-        window.stopGame = this.stopGame;
+        window.stopGame = b.stopGame;
 
         b.runGame('reset');
         b.createDecks();
         b.createHands();
-        var timeoutID1 = setTimeout(function() {
-          b.dealAll();
-          var timeoutID2 = setTimeout(function() {
-            b.selectiveDeal(b.playersAccepting(), 2, undefined, b.runGameNewRound)
-            var timeoutID3 = setTimeout(function() {
-              b.players[b.player_id].setPlayer();
-            }, 1500)
-            b.timerList.push(timeoutID3);
-          }, 1200)
-          b.timerList.push(timeoutID2);
+        b.createTimer(0, function() {
+          b.initialDeal();
+          b.createTimer(0, function() {
+            b.players[b.player_id].setPlayer();
+            b.createTimer(0, function() {
+              b.runGame('startTurn', 0)
+            }, 1000)
+          }, 200 * b.players.length * 2 + 500)
         }, 1500)
-        b.timerList.push(timeoutID1);
+
       } else if (a == 'reset') {
-        for (var i = 0; i < this.timerList.length; i++) {
+
+        for (var i = 0; i < b.timerList.length; i++) {
           try {
-            clearInterval(this.timerList[i])
+            clearInterval(b.timerList[i])
           } catch (e) {
-            clearTimeout(this.timerList[i])
+            clearTimeout(b.timerList[i])
           }
         }
-        this.timerList = [];
-        this.players = [];
-        this.player_id_counter = 0;
-        this.card_id_counter = 0;
-        this.deck = []
-        this.dealer.clearHand()
-        this.$emit('reset');
-      } else if (a == 'round') {
-        var goAgain = false;
-        for (var iRound = 0; iRound < this.players.length; iRound++) {
-          if (this.players[iRound].canAcceptCard()) {
-            goAgain = true;
-          }
-        }
-        if (goAgain) {
-          this.runGame('roundFirstHalf');
-        } else {
-          this.runGame('dealersTurn');
-        }
-      } else if (a == 'roundFirstHalf') {
-        var playersAccepting = [];
-        for (var iFirstHalf = 0; iFirstHalf < this.players.slice(0, this.player_id).length; iFirstHalf++) {
-          // returns true for hit, false for stand
-          if (this.players[iFirstHalf].getMove()) {
-            playersAccepting.push(this.players[iFirstHalf].id);
-          }
-        }
-        this.selectiveDeal(playersAccepting, 0, this.turnLength, this.runGameFirstHalfCallback, true, [0, this.player_id - 1]);
-      } else if (a == 'firstHalfCallback') {
-        var player = this.players[this.player_id];
-        if (!player.canAcceptCard()) {
-          this.runGame('roundSecondHalf');
-        } else {
-          player.isTurn = true;
-        }
-      } else if (a == 'roundSecondHalf') {
-        var timeoutID = setTimeout(() => {
-          this.players[this.player_id].isTurn = false;
-        }, 750)
-        this.timerList.push(timeoutID);
-        playersAccepting = [];
-        for (var j = this.player_id + 1; j < this.players.length; j++) {
-          // returns true for hit, false for stand
-          if (!this.players[j].getMove()) {
-            playersAccepting.push(this.players[j].id);
-          }
+        b.timerList = [];
+        b.players = [];
+        b.player_id_counter = 0;
+        b.card_id_counter = 0;
+        b.deck = []
+        b.dealer.clearHand()
+        b.$emit('reset');
+
+      } else if (a == 'startTurn') {
+
+        var playerID = c;
+        if (c !== parseInt(c, 10)) {
+          // eslint-disable-next-line
+          console.error("Player ID provided was not a number. Value: ", c)
+          return;
         }
 
-        this.selectiveDeal(playersAccepting, 0, this.turnLength, this.runGameNewRound, true, [this.player_id + 1]);
+        var player = b.players[playerID]
+
+        player.isTurn = true;
+        if (!player.isPlayer) {
+          b.createTimer(0, function() {
+            if (player.getMove()) {
+              b.giveCard(player);
+
+              // hit
+              b.sendEmit(c, 'hit');
+            }
+            if (player.hasStood) {
+              player.showStood = true;
+
+              // stand
+              b.sendEmit(c, 'stand');
+            }
+            if (player.bust()) {
+
+              // bust
+              b.sendEmit(c, 'bust');
+            }
+            b.createTimer(0, function() {
+              b.playerHook(player)
+            }, b.turnLength / 2)
+          }, b.turnLength / 2)
+        } else {
+          if (!player.canAcceptCard()) {
+            b.createTimer(0, function() {
+              b.playerHook(player)
+            }, b.turnLength / 2)
+            b.sendEmit(c, 'stand');
+          }
+        }
       } else if (a == 'dealersTurn') {
-        this.dealer.cards[1].up()
-        this.giveDealer();
+        b.dealer.cards[1].up()
+        b.giveDealer();
       } else if (a == 'finalise') {
 
-        var winners = []
-        var losers = []
+        for (i = 0; i < b.players.length; i++) {
 
-        for (i = 0; i < this.players.length; i++) {
+          var val = b.players[i].value()
+          if (val <= 21 && val > b.dealer.value_compare()) {
+            b.players[i].hasWon = true;
 
-          var val = this.players[i].value()
-          if (val <= 21 && val > this.dealer.value_compare()) {
-            this.players[i].hasWon = true;
-            // console.log(i, 'has won.');
-            // console.log(this.players[i].hasWon);
-            winners.push(this.players[i]);
-            if (i == this.player_id) {
-              this.$emit('playerWin');
+            if (i == b.player_id) {
+              b.$emit('playerWin'); // start fireworks
             }
-            // console.log("player", i, 'has won.');
-          } else if (val == this.dealer.value() && val > 21) {
-            this.players[i].hasLost = true;
-          }
-          else if (val == this.dealer.value()) {
-            this.players[i].hasTied = true;
-            // console.log("player", i, 'has tied.');
+
+          } else if (val == b.dealer.value() && val > 21) {
+            b.players[i].hasLost = true;
+          } else if (val == b.dealer.value()) {
+            b.players[i].hasTied = true;
           } else {
-            this.players[i].hasLost = true;
-            losers.push(this.players[i]);
-            // console.log("player", i, 'has lost.');
+            b.players[i].hasLost = true;
           }
-          this.players[i].showAllCards()
+          b.players[i].showAllCards()
         }
 
-        setTimeout(function() {
+        b.createTimer(0, function() {
           b.runGame('setup');
         }, 6000)
 
       }
     },
-    runGameFirstHalfCallback() {
-      this.runGame('firstHalfCallback');
-    },
-    runGameNewRound() {
-      this.runGame('round');
-    },
     giveDealer() {
       var b = this;
       if (this.dealer.dealerWillAccept()) {
-        var timeoutID1 = setTimeout(function() {
+        b.createTimer(0, function() {
           b.giveCard(b.dealer)
           b.giveDealer();
         }, 500)
-        b.timerList.push(timeoutID1)
       } else {
         this.runGame('finalise')
       }
 
+    },
+    playerHook(player) {
+      if (player.canAcceptCard()) {
+        this.runGame("startTurn", player.id)
+      } else {
+        player.isTurn = false;
+        if (this.players.length > player.id + 1) {
+          this.runGame("startTurn", player.id + 1)
+        } else {
+          this.runGame("dealersTurn")
+        }
+      }
     }
-
   }
 }
 </script>

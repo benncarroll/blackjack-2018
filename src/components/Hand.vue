@@ -1,16 +1,17 @@
 <template lang="html">
 <div class="hand-main main" v-bind:class="{darken: !hObject.isTurn, blacken: hObject.hasLost, brighten: hObject.hasWon}">
+  <div v-for="(emit, index) in hObject.emitMessages" :key="index" v-if="emit.render" class="emitter">{{ emit.text }}</div>
   <div class="value"> {{ hObject.value_display() }} </div>
-  <div class="hand" v-bind:style="{backgroundColor: hObject.colour}" v-bind:class="{wide: hObject.isPlayer}">
+  <div class="hand" v-bind:style="{backgroundColor: hObject.colour}" v-bind:class="{wide: hObject.isPlayer && hObject.isTurn}">
     <div class="flex flex-horizontal min-max">
       <div class="card-column">
         <Card v-for="card in hObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="hObject.quick_status()" />
       </div>
-      <div class="flex flex-vertical m-l-15 buttonbox" v-bind:class="{minibutton : !hObject.showButtons, hide: hObject.killButtons}">
-        <div class="button fill" @click="action('hit')" v-bind:class="{'btn-disabled' : disableActions()}">
+      <div class="flex flex-vertical m-l-15 buttonbox" v-bind:class="{minibutton : !hObject.showButtons, hide: hObject.killButtons || !hObject.isTurn}">
+        <div class="button fill" @click="action('hit', hObject.id)" v-bind:class="{'btn-disabled' : disableActions()}">
           <span>HIT</span>
         </div>
-        <div class="button fill" @click="action('stand')" v-bind:class="{'btn-disabled' : disableActions()}">
+        <div class="button fill" @click="action('stand', hObject.id)" v-bind:class="{'btn-disabled' : disableActions()}">
           <span>STAND</span>
         </div>
       </div>
@@ -30,7 +31,7 @@ export default {
   },
   data() {
     return {
-      showButtons: false
+      showButtons: false,
     }
   },
   methods: {
@@ -39,9 +40,11 @@ export default {
       if (!h.buttonsDisabled()) {
         if (arg == 'stand') {
           this.$emit('action', [h.id, 'stand'])
+          this.emitAction('stand');
         } else if (arg == 'hit') {
           if (h.canAcceptCard()) {
             this.$emit('action', [h.id, 'hit'])
+            this.emitAction('hit');
           }
         }
       }
@@ -55,6 +58,23 @@ export default {
     },
     setPlayer() {
       this.$emit('setPlayer')
+    },
+    emitAction(text) {
+      var b = this;
+      var t = (+new Date()) + 2000;
+      b.hObject.emitMessages.push({
+        text: text,
+        expiry: t,
+        render: true
+      })
+      setTimeout(function() {
+        var ems = b.hObject.emitMessages
+        for (var i = 0; i < ems.length; i++) {
+          if (ems[i].expiry < +new Date()) {
+            ems[i].render = false
+          }
+        }
+      }, 2000);
     }
   }
 
@@ -140,6 +160,21 @@ input {
   perspective: 1000px;
 }
 
+.brighten {
+  transition: 1s;
+  filter: brightness(1) !important;
+  animation: jump 1.5s ease 0s infinite normal;
+}
+
+.emitter {
+  animation: slide-out-top 2s ease-in-out both;
+  color: orange;
+  text-align: center;
+  /* position: absolute;
+  margin: 0 auto; */
+  margin-bottom: 10px;
+}
+
 @keyframes shake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);
@@ -153,12 +188,6 @@ input {
   40%, 60% {
     transform: translate3d(4px, 0, 0);
   }
-}
-
-.brighten {
-  transition: 1s;
-  filter: brightness(1) !important;
-  animation: jump 1.5s ease 0s infinite normal;
 }
 
 @keyframes jump {
@@ -184,4 +213,20 @@ input {
     transform: translateY(0);
   }
 }
+
+@keyframes slide-out-top {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
  </style>

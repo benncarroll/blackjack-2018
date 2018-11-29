@@ -54,6 +54,7 @@ export class HandClass {
     this.hasWon = false;
     this.hasTied = false;
     this.hasLost = false;
+    this.emitMessages = [];
 
     this.showButtons = false;
     this.killButtons = true;
@@ -62,6 +63,7 @@ export class HandClass {
   reset() {
     this.cards = [];
     this.hasStood = false;
+    this.emitMessages = [];
   }
   value() {
     var total = 0;

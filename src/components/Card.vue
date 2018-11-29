@@ -1,5 +1,5 @@
 <template lang="html">
-<div class="card noselect" v-on:click="cObject.flipped = !cObject.flipped">
+<div class="card noselect">
   <div class="wrapper" v-bind:style="{color: this.getSuitData('colour', cObject.suit)}" v-bind:class="{blackjack: hand_stat == 1,  bust: hand_stat == 2, stood: hand_stat == 3, overturned: cObject.flipped}" >
     <span class="value">{{ cObject.face_value.toUpperCase() }} </span>
 

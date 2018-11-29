@@ -10,11 +10,6 @@
   <div class="pyro-box" v-bind:class="{clear: !playerHasWon}">
     <canvas id="pyro" class="max">Canvas is not supported in your browser.</canvas>
   </div>
-  <!-- <div class="boom">
-    <button @click="startFireworks">Boom.</button>
-    <button @click="stopFireworks">Bye.</button>
-  </div> -->
-
 
   <router-view class="max" tag="div" v-on:playerWin="startFireworks" v-on:reset="stopFireworks" />
 </div>
@@ -323,14 +318,18 @@ export default {
     });
 
     loop();
+
+    setTimeout(function () {
+      document.getElementsByTagName('body')[0].classList.add('bg');
+    }, 1000);
   },
   data() {
     return {
-      player_count: 7,
+      player_count: 3,
       deck_count: 6,
       dealer_threshold: 17,
       ai_threshold: 16,
-      hideAICards: true,
+      hideAICards: false,
 
       playerHasWon: false
     }
@@ -356,6 +355,7 @@ export default {
 body {
   background-color: #EEEEEE;
   font-family: 'Montserrat', sans-serif;
+  zoom: 1.3;
 }
 
 body,
@@ -375,6 +375,8 @@ body {
   display: grid;
   grid-template-rows: auto;
   justify-items: center;
+}
+.bg {
   transition: background-color 2s;
 }
 
@@ -463,6 +465,7 @@ body {
 }
 
 .pyro-box {
+  position: absolute;
   padding-top: 80px;
   height: calc(100%-80px)
 }

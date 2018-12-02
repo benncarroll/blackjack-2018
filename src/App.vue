@@ -40,7 +40,6 @@ export default {
     }
     setInitialWidths()
     var zoomAdjustInterval = setInterval(function() {
-      // console.log('check');
       if (!window.location.href.includes('play')) {
         document.getElementsByTagName('body')[0].style.zoom = 1;
 

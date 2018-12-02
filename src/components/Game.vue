@@ -231,11 +231,10 @@ export default {
     dealCard(pObject) {
       var d = this.deck;
       if (d.length == 0) {
-        // eslint-disable-next-line
-        console.error('Deck out of cards.');
+        this.setEventText('Adding new decks...')
+        this.createDecks()
       }
       pObject.cards.push(this.popCard())
-
     },
     popCard() {
       if (this.deck.length == 0) {
@@ -346,8 +345,8 @@ export default {
 
         var playerID = c;
         if (c !== parseInt(c, 10)) {
-          // eslint-disable-next-line
-          console.error("Player ID provided was not a number. Value: ", c)
+          // // eslint-disable-next-line
+          // console.error("Player ID provided was not a number. Value: ", c)
           return;
         }
 

@@ -1,5 +1,8 @@
 <template>
 <div id="app">
+
+  <div class="loading-overlay" id='loader'></div>
+
   <div class="overlay-padding">
     <div class="overlay-box">
       <p>Your screen size is too small to play Blackjack!</p>
@@ -7,11 +10,12 @@
     </div>
   </div>
 
-  <div class="pyro-box" v-bind:class="{clear: !playerHasWon}">
+  <div class="pyro-box" v-bind:class="{clear: !playerHasWon, hide: $route.name != 'game'}">
     <canvas id="pyro" class="max">Canvas is not supported in your browser.</canvas>
   </div>
 
   <router-view class="max" tag="div" v-on:playerWin="startFireworks" v-on:reset="stopFireworks" />
+
 </div>
 </template>
 
@@ -24,6 +28,48 @@ export default {
     Game
   },
   mounted() {
+
+    var initialWidth, initialHeight, result;
+
+    function setInitialWidths() {
+      if (!window.location.href.includes('play')) {
+        initialWidth = document.getElementById('center-box').clientWidth
+        initialHeight = document.getElementById('center-box').clientHeight
+        result = 0;
+      }
+    }
+    setInitialWidths()
+    var zoomAdjustInterval = setInterval(function() {
+      // console.log('check');
+      if (!window.location.href.includes('play')) {
+        document.getElementsByTagName('body')[0].style.zoom = 1;
+
+        if (initialWidth == undefined) {
+          setInitialWidths()
+        }
+
+        if (window.innerWidth > window.innerHeight * 1.2) {
+          result = 0.7 * window.innerHeight / (Math.round(initialHeight / 5) * 5);
+        } else {
+          result = 0.8 * window.innerWidth / (Math.round(initialWidth / 5) * 5);
+        }
+
+        document.getElementById('center-box').style.zoom = result
+      } else {
+        // clearInterval(zoomAdjustInterval)
+        document.getElementsByTagName('body')[0].style.zoom = 1.3
+      }
+    }, 200)
+
+    setTimeout(function() {
+      var elem = document.getElementById('loader')
+      elem.classList.add('clear')
+      setTimeout(function() {
+        elem.parentNode.removeChild(elem);
+      }, 2000);
+    }, 500);
+
+
     window.fireworksLoopRunning = false;
 
     // when animating on canvas, it is best to use requestAnimationFrame instead of setTimeout or setInterval
@@ -319,7 +365,7 @@ export default {
 
     loop();
 
-    setTimeout(function () {
+    setTimeout(function() {
       document.getElementsByTagName('body')[0].classList.add('bg');
     }, 1000);
   },
@@ -351,15 +397,18 @@ export default {
 
 <style>
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
-
 body {
   background-color: #EEEEEE;
+  font-family: sans-serif;
+  /* zoom: 1.3; */
+  background-color: rgb(26, 26, 26);
   font-family: 'Montserrat', sans-serif;
-  zoom: 1.3;
+  display: grid;
+  grid-template-rows: auto;
+  justify-items: center;
 }
 
-body,
-html {
+body, html {
   margin: 0;
   height: 100%;
   overflow: hidden;
@@ -369,15 +418,25 @@ html {
   width: 100%;
 }
 
-body {
-  background-color: rgb(26, 26, 26);
-  font-family: 'Montserrat', sans-serif;
-  display: grid;
-  grid-template-rows: auto;
-  justify-items: center;
-}
 .bg {
   transition: background-color 2s;
+}
+
+.loading-overlay {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  background: white;
+  transition: opacity 2s;
+  opacity: 1;
+}
+
+.loading-overlay.clear {
+  transition: opacity 2s;
+  opacity: 0;
 }
 
 .overlay-box {
@@ -397,7 +456,7 @@ body {
   text-align: center;
 }
 
-@media only screen and (min-width: 300px) {
+@media only screen and (min-width: 200px) {
   .overlay-box {
     display: none;
   }
@@ -416,7 +475,6 @@ body {
   min-width: 100%;
   min-height: 100%;
 }
-
 
 .flex {
   display: flex;
@@ -473,5 +531,14 @@ body {
 .clear {
   opacity: 0;
   transition: opacity 2s;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 </style>

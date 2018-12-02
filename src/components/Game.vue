@@ -1,19 +1,23 @@
 <template>
 <div class='main noselect'>
+
   <div class="dealer-bar">
     <Dealer v-bind:dObject="dealer" />
-
     <button id="setup" class="hide" v-on:click="runGame('setup')">Setup</button>
-
   </div>
+
+  <div class="event-text">
+    {{ eventText }}
+  </div>
+
   <div class="hand-bar">
     <Hand v-for="(hand, index) in players" v-bind:key="hand.id" v-bind:hObject="hand" v-on:action="handEvent" v-on:setPlayer="setPlayer(hand.id)" v-bind:ref="'playerComponent'+index.toString()" />
   </div>
+
 </div>
 </template>
 
 <script>
-import Card from './Card.vue'
 import Hand from './Hand.vue'
 import Dealer from './Dealer.vue'
 import {
@@ -24,7 +28,6 @@ import {
 export default {
   name: 'Game',
   components: {
-    Card,
     Hand,
     Dealer
   },
@@ -44,6 +47,35 @@ export default {
     setTimeout(function() {
       eventFire(document.getElementById('setup'), 'click')
     }, 200)
+
+
+    window.num2str = function(num) {
+      return window.num2str.convert(num);
+    }
+    window.num2str.ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    window.num2str.tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    window.num2str.teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    window.num2str.convert_tens = function(num) {
+      if (num < 10) return this.ones[num];
+      else if (num >= 10 && num < 20) return this.teens[num - 10];
+      else {
+        return this.tens[Math.floor(num / 10)] + " " + this.ones[num % 10];
+      }
+    }
+    window.num2str.convert = function(num) {
+      if (num == 0) return "zero";
+      else return this.convert_tens(num);
+    }
+
+    window.toTitleCase = function(str) {
+      return str.replace(
+        /\w\S*/g,
+        function(txt) {
+          return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+      );
+    }
+
   },
   data() {
     return {
@@ -67,7 +99,9 @@ export default {
       shuffleAmount: 100000,
 
       timerList: [],
-      turnLength: 1000
+      turnLength: 1000,
+
+      eventText: ""
 
     }
   },
@@ -93,9 +127,10 @@ export default {
     },
     initialDeal() {
       var b = this;
+      b.setEventText('Dealing cards...')
       b.selectiveDeal(b.playersAccepting())
       b.createTimer(0, function() {
-        b.selectiveDeal(b.playersAccepting())
+        b.selectiveDeal(b.playersAccepting(), 2)
       }, 200 * this.players.length);
     },
     giveCard(player) {
@@ -256,6 +291,9 @@ export default {
       var obj = this.$refs["playerComponent" + player_id.toString()][0]
       obj.emitAction(text);
     },
+    setEventText(text) {
+      this.eventText = text;
+    },
     createTimer(type, f, time) {
       // type = 0 for timeout, 1 for interval
       var id;
@@ -316,6 +354,13 @@ export default {
         var player = b.players[playerID]
 
         player.isTurn = true;
+
+        if (player.isPlayer) {
+          b.setEventText('Your turn...')
+        } else {
+          b.setEventText('Player ' + window.toTitleCase(window.num2str(playerID + 1)) + "'s turn...")
+        }
+
         if (!player.isPlayer) {
           b.createTimer(0, function() {
             if (player.getMove()) {
@@ -348,31 +393,42 @@ export default {
           }
         }
       } else if (a == 'dealersTurn') {
-        b.dealer.cards[1].up()
-        b.giveDealer();
+        b.setEventText('Dealer will now play...');
+        setTimeout(function() {
+          b.dealer.cards[1].up()
+          b.giveDealer();
+        }, 500);
       } else if (a == 'finalise') {
 
         for (i = 0; i < b.players.length; i++) {
-
+          var state = ""
           var val = b.players[i].value()
           if (val <= 21 && val > b.dealer.value_compare()) {
             b.players[i].hasWon = true;
-
-            if (i == b.player_id) {
-              b.$emit('playerWin'); // start fireworks
-            }
-
+            state = 'won';
           } else if (val == b.dealer.value() && val > 21) {
             b.players[i].hasLost = true;
+            state = 'lost';
           } else if (val == b.dealer.value()) {
             b.players[i].hasTied = true;
+            state = 'tied';
           } else {
             b.players[i].hasLost = true;
+            state = 'lost';
+          }
+          if (i == b.player_id) {
+            if (state == 'won') {
+              b.$emit('playerWin'); // start fireworks
+              b.setEventText('You won!')
+            } else {
+              b.setEventText('You ' + state + '.')
+            }
           }
           b.players[i].showAllCards()
         }
 
         b.createTimer(0, function() {
+          b.setEventText('Resetting...')
           b.runGame('setup');
         }, 6000)
 
@@ -384,7 +440,7 @@ export default {
         b.createTimer(0, function() {
           b.giveCard(b.dealer)
           b.giveDealer();
-        }, 500)
+        }, 1000)
       } else {
         this.runGame('finalise')
       }
@@ -422,6 +478,15 @@ export default {
   position: fixed;
   width: 100%;
   top: 0;
+}
+
+.event-text {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  color: orange;
+  text-align: center;
 }
 
 .button {
@@ -477,15 +542,6 @@ export default {
 
 .m-l-15 {
   margin-left: 15px;
-}
-
-.noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 .disabled {

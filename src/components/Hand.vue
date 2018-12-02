@@ -2,12 +2,12 @@
 <div class="hand-main main" v-bind:class="{darken: !hObject.isTurn, blacken: hObject.hasLost, brighten: hObject.hasWon}">
   <div v-for="(emit, index) in hObject.emitMessages" :key="index" v-if="emit.render" class="emitter">{{ emit.text }}</div>
   <div class="value"> {{ hObject.value_display() }} </div>
-  <div class="hand" v-bind:style="{backgroundColor: hObject.colour}" v-bind:class="{wide: hObject.isPlayer && hObject.isTurn}">
+  <div class="hand" v-bind:style="{backgroundColor: hObject.colour}" v-bind:class="{wide: hObject.isPlayer}">
     <div class="flex flex-horizontal min-max">
       <div class="card-column">
         <Card v-for="card in hObject.cards" v-bind:key="card.id" v-bind:cObject="card" v-bind:hand_stat="hObject.quick_status()" />
       </div>
-      <div class="flex flex-vertical m-l-15 buttonbox" v-bind:class="{minibutton : !hObject.showButtons, hide: hObject.killButtons || !hObject.isTurn}">
+      <div class="flex flex-vertical m-l-15 buttonbox" v-bind:class="{minibutton : !hObject.showButtons, hide: hObject.killButtons }">
         <div class="button fill" @click="action('hit', hObject.id)" v-bind:class="{'btn-disabled' : disableActions()}">
           <span>HIT</span>
         </div>
@@ -84,19 +84,19 @@ export default {
 <style scoped>
 @import url("https://cdn.jsdelivr.net/npm/animate.css@3.5.1");
 @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
-
-.hand { background: rgba(199, 199, 199, 1);
-padding: 10px;
-margin-right: 5px;
-margin-left: 5px;
-text-align: center;
-border: 2px solid transparent;
-border-color: transparent;
-border-radius: 10px 10px 0px 0px;
-min-width: 60px;
-min-height: 100px;
-width: 60px;
-transition: .5s;
+.hand {
+  background: rgba(199, 199, 199, 1);
+  padding: 10px;
+  margin-right: 5px;
+  margin-left: 5px;
+  text-align: center;
+  border: 2px solid transparent;
+  border-color: transparent;
+  border-radius: 10px 10px 0px 0px;
+  min-width: 60px;
+  min-height: 100px;
+  width: 60px;
+  transition: .5s;
 }
 
 .buttonbox {
@@ -228,5 +228,4 @@ input {
     opacity: 0;
   }
 }
-
  </style>

@@ -2,6 +2,9 @@
 
 Blackjack made for a 12SDD assignment. Written in [Vue.js](https://vuejs.org/) and built with components.
 
+## Live version
+
+An exact built copy of this project as of Commit [#a3cfb9a](https://bitbucket.org/bencarroll/carrollblackjack2018/commits/a3cfb9affac740e11a795716bb0fb912e8da8616) is available on my website [here](https://bencarroll.tech/projects/blackjack/). If you wish to test/build the application yourself, please use the below instructions.
 
 ## Using this repo
 
@@ -13,4 +16,3 @@ Blackjack made for a 12SDD assignment. Written in [Vue.js](https://vuejs.org/) a
     - `yarn run build`
 - Lints and fixes files
     - `yarn run lint`
-  

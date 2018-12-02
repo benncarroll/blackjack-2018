@@ -39,7 +39,7 @@ export default {
       }
     }
     setInitialWidths()
-    var zoomAdjustInterval = setInterval(function() {
+    setInterval(function() {
       if (!window.location.href.includes('play')) {
         document.getElementsByTagName('body')[0].style.zoom = 1;
 
@@ -55,7 +55,6 @@ export default {
 
         document.getElementById('center-box').style.zoom = result
       } else {
-        // clearInterval(zoomAdjustInterval)
         document.getElementsByTagName('body')[0].style.zoom = 1.3
       }
     }, 200)
